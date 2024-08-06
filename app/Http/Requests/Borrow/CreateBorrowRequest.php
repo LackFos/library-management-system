@@ -16,6 +16,7 @@ class CreateBorrowRequest extends FormRequest
         return [
             'book_id' => 'bail|required|array',
             'book_id.*' => 'bail|required|exists:books,id',
+            'user_id' => 'bail|required|exists:users,id',
         ];
     }
 }

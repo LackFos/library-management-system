@@ -10,7 +10,12 @@ class Borrow extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id', 'user_id'];
+    protected $guarded = ['id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function books()
     {
@@ -29,10 +34,10 @@ class Borrow extends Model
 
     public function getPenaltyFee(): ?int
     {
-        $borrowDate = $this->created_at;
+        $borrowDate = Carbon::parse($this->created_at)->subDays(4);
+        
         $currentDate = Carbon::now();
 
-        
         $penaltyPerDay = 10000;
         $totalBookBorrowed = $this->books()->count();
 

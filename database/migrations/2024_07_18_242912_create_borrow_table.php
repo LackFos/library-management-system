@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('borrows', function (Blueprint $table) {
             $table->id();
-            $table->foreignUuid('user_id')->constrained();
+            $table->foreignId('user_id')->constrained();
             $table->foreignId('borrow_status_id')->constrained()->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
         });

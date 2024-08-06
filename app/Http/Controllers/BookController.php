@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BorrowStatus;
 use App\Models\Book;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\Book\CreateBookRequest;
@@ -14,11 +15,25 @@ class BookController extends Controller
     {
         try {
             $keyword = $request->query('search');
-
-            $books = $keyword ? Book::where('title', 'like', '%' . $keyword . '%')->get() : Book::all();
-
+    
+            $query = Book::query();
+    
+            if ($keyword) {
+                $query->where('title', 'like', '%' . $keyword . '%');
+            }
+    
+            $books = $query->withCount([
+                'borrowed' => function ($query) {
+                    $query->where('borrow_status_id', BorrowStatus::BORROWING);
+                }
+            ])->get();
+    
+            $books->each(function ($book) {
+                $book->available_stock = $book->stock - $book->borrowed_count;
+            });
+    
             $message = $books->isEmpty() ? 'Book not found' : 'Book found';
-            
+    
             return ResponseHelper::returnOkResponse($message, $books);
         } catch (\Exception $ex) {
             return ResponseHelper::throwInternalError($ex->getMessage());

@@ -8,6 +8,8 @@ use App\Http\Requests\Borrow\CreateBorrowRequest;
 use App\Http\Requests\Borrow\UpdateBorrowRequest;
 use App\Models\Book;
 use App\Models\Borrow;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BorrowController extends Controller
@@ -17,6 +19,18 @@ class BorrowController extends Controller
         try {
             $query = Borrow::latest();
 
+            $userId = $request->query('user_id');
+
+            if($userId) {
+                $query->where('user_id', $userId);
+            }
+
+            $statusId = $request->query('status_id');
+
+            if($statusId) {
+                $query->where('borrow_status_id', $statusId);
+            }
+            
             $startDate = $request->query('startDate');
             $endDate = $request->query('endDate');
 
@@ -24,10 +38,18 @@ class BorrowController extends Controller
                 $dateRange = [$startDate, $endDate];
                 $query->whereBetween('created_at', $dateRange);
             } else if ($startDate) {
-                $query->where('created_at', $startDate);
+                $query->whereBetween('created_at', [Carbon::parse($startDate)->startOfDay(), Carbon::parse($startDate)->endOfDay()]);
             }
 
-            $borrows = $query->get();
+            $borrows = $query->with([
+                'user',
+                'books',
+                'borrowStatus'
+            ])->get();
+
+            $borrows->each(function ($borrow) {
+                $borrow->penalty_fee = $borrow->getPenaltyFee();
+            });
 
             $message = $borrows->isNotEmpty() ? 'Borrow found' : 'Borrow not found';
             
@@ -44,6 +66,10 @@ class BorrowController extends Controller
 
             $borrows = $user->borrows()->get();
             
+            $borrows->each(function ($borrow) {
+                $borrow->penalty_fee = $borrow->getPenaltyFee();
+            });
+
             return ResponseHelper::returnOkResponse('Borrow found', $borrows);
         } catch (\Exception $exception) {
             return ResponseHelper::throwInternalError($exception->getMessage());
@@ -67,18 +93,15 @@ class BorrowController extends Controller
         }
     }
 
-
-
     public function create(CreateBorrowRequest $request)
     {
         try {
             $validated = $request->validated();
+
             $validated['borrow_status_id'] = BorrowStatus::BORROWING;
 
-            /** @var User $user */
-            $user = auth()->user();
-
-            $books = Book::find($validated['book_id']);
+            $user = User::findOrFail($validated['user_id']);
+            $books = Book::findOrFail($validated['book_id']);
 
             foreach ($books as $book) {
                 $currentBorrowedCount = $book->borrowed()->where('borrow_status_id', BorrowStatus::BORROWING)->count();
@@ -86,22 +109,14 @@ class BorrowController extends Controller
                 $isOutOfStock = $currentBorrowedCount >= $book->stock;
                 
                 if ($isOutOfStock) {
-                    if($request->expectsJson()) {
-                        return ResponseHelper::throwConflictError("The book with ID '" . $book->id . "' is currently unavailable.");
-                    } else {
-                        return redirect()->back()->with('error', 'Buku ini tidak tersedia saat ini');
-                    }
+                    return ResponseHelper::throwConflictError("The book with ID '" . $book->id . "' is currently unavailable.");
                 }
             }
 
             $borrow = $user->borrows()->create($validated);
             $borrow->books()->sync($validated['book_id']);
 
-            if($request->expectsJson()) {
-                return ResponseHelper::returnOkResponse('Book borrowed successfully', $borrow);
-            } else {
-                return redirect()->back()->with('success', 'Buku berhasil dipinjam');
-            }
+            return ResponseHelper::returnOkResponse('Book borrowed successfully', $borrow);
         } catch (\Exception $exception) {
             return ResponseHelper::throwInternalError($exception->getMessage());
         }
