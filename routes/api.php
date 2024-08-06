@@ -18,17 +18,17 @@ Route::prefix('/v1')->group(function () {
         Route::get('/borrows', [BorrowController::class, 'userBorrows'])->middleware('auth:sanctum');
     });
 
-   Route::prefix('/books')->middleware('auth:sanctum')->group(function () {
+    Route::prefix('/books')->middleware('auth:sanctum')->group(function () {
        Route::get('/', [BookController::class, 'all']);
        Route::get('/{book:isbn}', [BookController::class, 'detail']);
        Route::post('/', [BookController::class, 'create']);
-       Route::put('/{book}', [BookController::class, 'update'])->middleware(userIsAdmin::class);
+       Route::put('/{book}', [BookController::class, 'update']);
        Route::delete('/{book}', [BookController::class, 'delete'])->middleware(userIsAdmin::class);
    });
 
    Route::prefix('/borrows')->middleware(['auth:sanctum', userIsAdmin::class])->group(function () {
-        Route::get('/', [BorrowController::class, 'all']); 
-        Route::get('/{borrow}', [BorrowController::class, 'detail'])->withoutMiddleware(userIsAdmin::class); 
+        Route::get('/', [BorrowController::class, 'myBorrows']); 
+        Route::get('/{borrow}', [BorrowController::class, 'detail']);
         Route::post('/', [BorrowController::class, 'create']); 
         Route::post('/{borrow}/return', [BorrowController::class, 'returnBook']);
    });

@@ -28,18 +28,15 @@ class BookController extends Controller
     public function create(CreateBookRequest $request)
     {
         try {
-            /** @var User $user */
-            $user = auth()->user();
-
-            if(!$user->hasRole('admin')) {
-                return ResponseHelper::throwUnauthorizedError('Only admin can create book');
-            }
-
             $validated = $request->validated();
 
             $book = Book::create($validated);
 
-            return ResponseHelper::returnOkResponse('Book created', $book);
+            if($request->expectsJson()) {
+                return ResponseHelper::returnOkResponse('Book created', $book);
+            } else {
+                return redirect('/buku/' . $book->id)->with('success', 'Buku berhasil ditambahkan');
+            }
         } catch (\Exception $ex) {
             return ResponseHelper::throwInternalError($ex->getMessage());
         }
@@ -61,20 +58,29 @@ class BookController extends Controller
 
             $book->update($validated);
 
-            return ResponseHelper::returnOkResponse('Book updated successfully', $book);
-        } catch (\Exception $ex) {
+            if ($request->expectsJson()) {
+                return ResponseHelper::returnOkResponse('Book updated successfully', $book);
+            } else {
+                return redirect('/buku/' . $book->id)->with('success', 'Buku berhasil diupdate');
+            }
+        } catch (\Exception $ex) { 
             return ResponseHelper::throwInternalError($ex->getMessage());
         }
     }
 
-    public function delete(Book $book)
+    public function delete(Request $request, Book $book)
     {
         try {
             $book->borrowed()->delete();
 
             $book->delete();
 
-            return ResponseHelper::returnOkResponse('Book deleted successfully', $book);
+            if($request->expectsJson()) {
+                return ResponseHelper::returnOkResponse('Book deleted successfully', $book);
+            } else {
+                return redirect('/buku')->with('success', 'Buku berhasil dihapus');
+            }
+
         } catch (\Exception $ex) {
             return ResponseHelper::throwInternalError($ex->getMessage());
         }

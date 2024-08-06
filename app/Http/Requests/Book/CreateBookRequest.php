@@ -11,6 +11,7 @@ class CreateBookRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
     public function rules(): array
     {
         return [
@@ -19,7 +20,9 @@ class CreateBookRequest extends FormRequest
             'isbn' => 'bail|required|string|unique:books|digits_between:10,13',
             'publisher' => 'bail|required|string|min:3|max:255',
             'publication_date' => 'bail|required|date',
-            'quantity' => 'bail|required|integer'
+            'stock' => 'bail|required|integer|min:0',
+            'image' => 'bail|nullable|image|max:5120',
+            "description" => 'bail|nullable|string|max:255'
         ];
     }
 }

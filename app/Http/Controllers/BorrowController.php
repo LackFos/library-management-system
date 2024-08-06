@@ -8,7 +8,6 @@ use App\Http\Requests\Borrow\CreateBorrowRequest;
 use App\Http\Requests\Borrow\UpdateBorrowRequest;
 use App\Models\Book;
 use App\Models\Borrow;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BorrowController extends Controller
@@ -38,6 +37,19 @@ class BorrowController extends Controller
         }
     }
 
+    public function myBorrows() {
+        try {
+            /** @var User $user */
+            $user = auth()->user();
+
+            $borrows = $user->borrows()->get();
+            
+            return ResponseHelper::returnOkResponse('Borrow found', $borrows);
+        } catch (\Exception $exception) {
+            return ResponseHelper::throwInternalError($exception->getMessage());
+        }
+    }
+
     public function detail(Borrow $borrow)
     {
         try {
@@ -55,18 +67,7 @@ class BorrowController extends Controller
         }
     }
 
-    public function userBorrows() {
-        try {
-            /** @var User $user */
-            $user = auth()->user();
 
-            $borrows = $user->borrows()->get();
-            
-            return ResponseHelper::returnOkResponse('Borrow found', $borrows);
-        } catch (\Exception $exception) {
-            return ResponseHelper::throwInternalError($exception->getMessage());
-        }
-    }
 
     public function create(CreateBorrowRequest $request)
     {
@@ -82,17 +83,25 @@ class BorrowController extends Controller
             foreach ($books as $book) {
                 $currentBorrowedCount = $book->borrowed()->where('borrow_status_id', BorrowStatus::BORROWING)->count();
 
-                $isOutOfStock = $currentBorrowedCount >= $book->quantity;
+                $isOutOfStock = $currentBorrowedCount >= $book->stock;
                 
                 if ($isOutOfStock) {
-                    return ResponseHelper::throwConflictError("The book with ID '" . $book->id . "' is currently unavailable.");
+                    if($request->expectsJson()) {
+                        return ResponseHelper::throwConflictError("The book with ID '" . $book->id . "' is currently unavailable.");
+                    } else {
+                        return redirect()->back()->with('error', 'Buku ini tidak tersedia saat ini');
+                    }
                 }
             }
 
             $borrow = $user->borrows()->create($validated);
             $borrow->books()->sync($validated['book_id']);
 
-            return ResponseHelper::returnOkResponse('Book borrowed successfully', $borrow);
+            if($request->expectsJson()) {
+                return ResponseHelper::returnOkResponse('Book borrowed successfully', $borrow);
+            } else {
+                return redirect()->back()->with('success', 'Buku berhasil dipinjam');
+            }
         } catch (\Exception $exception) {
             return ResponseHelper::throwInternalError($exception->getMessage());
         }

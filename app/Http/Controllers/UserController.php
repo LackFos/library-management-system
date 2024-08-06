@@ -4,15 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Models\User;
-use App\Http\Helpers;
-use App\Http\Requests\ResetPasswordRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\User\UserLoginRequest;
 use App\Http\Requests\User\UserRegisterRequest;
-use App\Http\Requests\VerifyAccountRequest;
-use App\Models\OneTimePassword;
+use Illuminate\Http\Request ;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -35,24 +30,22 @@ class UserController extends Controller
         }
     }
 
-    public function login(UserLoginRequest $request)
+    public function login(Request $request)
     {
         try {
-            $credentials = $request->validated();
-            $isAuthenticated = Auth::attempt($credentials);
-            
+            $isAuthenticated = Auth::attempt([
+                'email' => $request['email'],
+                'password' => $request['password']
+            ]);
+
             if (!$isAuthenticated) {
-                return ResponseHelper::throwNotFoundError('Invalid username or password');
+                return ResponseHelper::throwUnauthorizedError('Invalid username or password');
             }
-                    
+            
             /** @var User $user */
             $user = auth()->user();
             
-            $user->currentAccessToken()?->delete();
-
-            $token = $user->createToken('access_token')->plainTextToken;
-
-            $user['access_token'] = $token;
+            $user['access_token'] = $user->createToken('access_token')->plainTextToken;
 
             return ResponseHelper::returnOkResponse('User logged in', $user);
         } catch (\Throwable $th) {
