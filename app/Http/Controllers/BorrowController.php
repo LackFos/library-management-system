@@ -65,7 +65,9 @@ class BorrowController extends Controller
             /** @var User $user */
             $user = Auth::user();
 
-            $borrows = $user->borrows()->get();
+            $borrows = $user->borrows()->with([
+                'books'
+            ])->get();
             
             $borrows->each(function ($borrow) {
                 $borrow->penalty_fee = $borrow->getPenaltyFee();
