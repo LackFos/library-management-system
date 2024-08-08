@@ -19,6 +19,9 @@ Route::prefix('/v1')->group(function () {
         $stats = [
             'book_count' => Book::count(),
             'borrow_count' => Borrow::where('borrow_status_id', '2')->count(),
+            'overdue_count' => Borrow::all()->filter(function ($borrow) {
+                return $borrow->getPenaltyFee() !== null;
+            })->count(),
         ];
 
         return ResponseHelper::returnOkResponse("System stats", $stats);
