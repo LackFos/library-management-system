@@ -18,7 +18,7 @@ Route::prefix('/v1')->group(function () {
     Route::get('/stats', function() {
         $stats = [
             'book_count' => Book::count(),
-            'borrow_count' => Borrow::where('borrow_status_id', '2')->count(),
+            'borrow_count' => Borrow::where('borrow_status_id', '1')->count(),
             'overdue_count' => Borrow::all()->filter(function ($borrow) {
                 return $borrow->getPenaltyFee() !== null;
             })->count(),
