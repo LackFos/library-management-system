@@ -34,15 +34,24 @@ class Borrow extends Model
 
     public function getPenaltyFee(): ?int
     {
-        $borrowDate = Carbon::parse($this->created_at)->subDays(4);
-        
+        // $borrowDate = Carbon::parse($this->created_at);        
+        // $currentDate = Carbon::now();
+
+        // $penaltyPerDay = 10000;
+        // $totalBookBorrowed = $this->books()->count();
+
+        // $dueDate = $borrowDate->addDays(7);
+        // $daysOverdue = floor($dueDate->diffInDays($currentDate));
+        // $isOverdue = $daysOverdue > 0;
+
+        $borrowDate = Carbon::parse($this->created_at);        
         $currentDate = Carbon::now();
 
         $penaltyPerDay = 10000;
         $totalBookBorrowed = $this->books()->count();
 
-        $dueDate = $borrowDate->addDays(7);
-        $daysOverdue = floor($dueDate->diffInDays($currentDate));
+        $dueDate = $borrowDate->addMinutes(5);
+        $daysOverdue = floor($dueDate->diffInMinutes($currentDate));
         $isOverdue = $daysOverdue > 0;
 
         return $isOverdue ?  $daysOverdue * ($totalBookBorrowed * $penaltyPerDay) : null;

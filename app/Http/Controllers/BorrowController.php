@@ -11,6 +11,7 @@ use App\Models\Borrow;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BorrowController extends Controller
 {
@@ -62,7 +63,7 @@ class BorrowController extends Controller
     public function myBorrows() {
         try {
             /** @var User $user */
-            $user = auth()->user();
+            $user = Auth::user();
 
             $borrows = $user->borrows()->get();
             

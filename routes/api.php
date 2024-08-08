@@ -15,7 +15,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('/v1')->group(function () {
-    Route::get('/stats', function() {
+    Route::middleware('auth:sanctum')->get('/stats', function() {
         $stats = [
             'book_count' => Book::count(),
             'borrow_count' => Borrow::where('borrow_status_id', '1')->count(),
@@ -30,7 +30,7 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/users')->group(function () {
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/login', [UserController::class, 'login']);
-        Route::get('/borrows', [BorrowController::class, 'userBorrows'])->middleware('auth:sanctum');
+        Route::middleware('auth:sanctum')->get('/borrows', [BorrowController::class, 'myBorrows']);
     });
 
     Route::prefix('/books')->middleware('auth:sanctum')->group(function () {
