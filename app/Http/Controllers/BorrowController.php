@@ -66,7 +66,8 @@ class BorrowController extends Controller
             $user = Auth::user();
 
             $borrows = $user->borrows()->with([
-                'books'
+                'books',
+                'borrowStatus'
             ])->get();
             
             $borrows->each(function ($borrow) {
