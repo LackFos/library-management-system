@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('author');
             $table->string('isbn', 13)->unique();
             $table->string('publisher');
-            $table->string('image')->nullable()->default('/storage/images/noimage.png');
+            $table->string('image')->nullable()->default('/storage/images/noimage.jpg');
             $table->date('publication_date');
             $table->integer('stock');
             $table->string('description')->nullable();
