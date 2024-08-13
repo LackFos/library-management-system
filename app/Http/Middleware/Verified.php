@@ -3,12 +3,13 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Helpers;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserIsAdmin
+class Verified
 {
     /**
      * Handle an incoming request.
@@ -17,13 +18,10 @@ class UserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if(!$user->hasRole('admin')) {
-            return ResponseHelper::throwUnauthorizedError('Only admin can access this route');
+        if(!$request->user()->email_verified_at) {
+            return ResponseHelper::throwUnauthorizedError('Please verify your email first');
         }
-
+        
         return $next($request);
     }
 }

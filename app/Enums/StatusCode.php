@@ -10,5 +10,6 @@ enum StatusCode: int
     const UNAUTHORIZED = 403;
     const NOT_FOUND = 404;
     const CONFLICT = 409;
+    const TOO_MANY_REQUEST = 429;
     const INTERNAL_SERVER_ERROR = 500;
 }

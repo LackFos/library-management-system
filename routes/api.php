@@ -5,7 +5,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\PenaltyController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\userIsAdmin;
+use App\Http\Middleware\UserIsAdmin;
 use App\Models\Book;
 use App\Models\Borrow;
 use Illuminate\Support\Facades\Route;
@@ -15,7 +15,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('/v1')->group(function () {
-    Route::middleware('auth:sanctum')->get('/stats', function() {
+    Route::middleware(['auth:sanctum', UserIsAdmin::class])->get('/stats', function() {
         $stats = [
             'book_count' => Book::count(),
             'borrow_count' => Borrow::where('borrow_status_id', '1')->count(),
@@ -30,26 +30,31 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/users')->group(function () {
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/login', [UserController::class, 'login']);
-        Route::middleware('auth:sanctum')->get('/borrows', [BorrowController::class, 'myBorrows']);
+
+        Route::get('/borrows', [BorrowController::class, 'myBorrows'])->middleware('auth:sanctum');
+        Route::post('/reset-password', [UserController::class, 'resetPassword']);
+        Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
+        Route::post('/verify', [UserController::class, 'verifyAccount'])->middleware('auth:sanctum');
+        Route::post('/send-verify-otp', [UserController::class, 'sendVerifyOtp'])->middleware('auth:sanctum');
     });
 
     Route::prefix('/books')->middleware('auth:sanctum')->group(function () {
        Route::get('/', [BookController::class, 'all']);
        Route::get('/{book:isbn}', [BookController::class, 'detail']);
-       Route::post('/', [BookController::class, 'create']);
-       Route::put('/{book}', [BookController::class, 'update']);
-       Route::delete('/{book}', [BookController::class, 'delete'])->middleware(userIsAdmin::class);
+       Route::post('/', [BookController::class, 'create'])->middleware(UserIsAdmin::class);
+       Route::put('/{book}', [BookController::class, 'update'])->middleware(UserIsAdmin::class);
+       Route::delete('/{book}', [BookController::class, 'delete'])->middleware(UserIsAdmin::class);
    });
 
-   Route::prefix('/borrows')->middleware(['auth:sanctum', userIsAdmin::class])->group(function () {
+   Route::prefix('/borrows')->middleware(['auth:sanctum', UserIsAdmin::class])->group(function () {
         Route::get('/', [BorrowController::class, 'all']); 
         Route::get('/{borrow}', [BorrowController::class, 'detail']);
         Route::post('/', [BorrowController::class, 'create']); 
         Route::post('/{borrow}/return', [BorrowController::class, 'returnBook']);
    });
 
-   Route::prefix('/penalties')->middleware(['auth:sanctum', userIsAdmin::class])->group(function () {
-        Route::get('/', [PenaltyController::class, 'all']); 
-        Route::get('/{penalty}', [PenaltyController::class, 'detail']); 
+   Route::prefix('/penalties')->middleware(['auth:sanctum', UserIsAdmin::class])->group(function () {
+        Route::get('/', [PenaltyController::class, 'all'])->middleware(UserIsAdmin::class); 
+        Route::get('/{penalty}', [PenaltyController::class, 'detail'])->middleware(UserIsAdmin::class); 
     });
 }); 
