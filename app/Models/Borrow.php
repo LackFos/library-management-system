@@ -40,7 +40,9 @@ class Borrow extends Model
         $penaltyPerDay = 10000;
         $totalBookBorrowed = $this->books()->count();
 
-        $dueDate = $borrowDate->addDays(7);
+        $dueDay = env('APP_BORROW_DUE_DAY', 7);
+
+        $dueDate = $borrowDate->addDays($dueDay);
         $daysOverdue = floor($dueDate->diffInDays($currentDate));
         $isOverdue = $daysOverdue > 0;
 
