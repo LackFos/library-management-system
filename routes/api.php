@@ -3,6 +3,7 @@
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowController;
+use App\Http\Controllers\OneTimePasswordController;
 use App\Http\Controllers\PenaltyController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\UserIsAdmin;
@@ -56,5 +57,9 @@ Route::prefix('/v1')->group(function () {
    Route::prefix('/penalties')->middleware(['auth:sanctum', UserIsAdmin::class])->group(function () {
         Route::get('/', [PenaltyController::class, 'all'])->middleware(UserIsAdmin::class); 
         Route::get('/{penalty}', [PenaltyController::class, 'detail'])->middleware(UserIsAdmin::class); 
+    });
+
+    Route::prefix('otps')->group(function () {
+        Route::post('/verify', [OneTimePasswordController::class, 'verify']);
     });
 }); 
