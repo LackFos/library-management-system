@@ -762,12 +762,12 @@ img,p{margin:0;Margin:0;font-family:Lato,BlinkMacSystemFont,Segoe UI,Helvetica N
                                                                     style="background-color:#E8FFE4;overflow:hidden;width:141px;text-align:center;line-height:32px;mso-line-height-rule:exactly;mso-text-raise:5px;border-radius:8px 8px 8px 8px;"
                                                                 >
                                                                     <!--<![endif]-->
-                                                                    <a
+                                                                    <span
                                                                         class="t12"
                                                                         href="#"
                                                                         style="display:block;margin:0;Margin:0;font-family:Inter,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:32px;font-weight:700;font-style:normal;font-size:14px;text-decoration:none;letter-spacing:-0.5px;direction:ltr;color:#214F3B;text-align:center;mso-line-height-rule:exactly;mso-text-raise:5px;"
                                                                         target="_blank"
-                                                                    >{{ $otp }}</a>
+                                                                    >{{ $otp }}</span>
                                                                 </td>
                                                             </tr>
                                                         </table>
