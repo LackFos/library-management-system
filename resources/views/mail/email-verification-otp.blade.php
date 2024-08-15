@@ -637,8 +637,8 @@ img,p{margin:0;Margin:0;font-family:Lato,BlinkMacSystemFont,Segoe UI,Helvetica N
                                                                             style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;"
                                                                             width="60"
                                                                             height="60"
-                                                                            alt=""
-                                                                            src="https://i.ibb.co.com/rvvQZ56/logo.png"
+                                                                            alt="Suka Perpus"
+                                                                            src="https://i.ibb.co.com/9g3GKKJ/a.png"
                                                                         /></a>
                                                                 </td>
                                                             </tr>
