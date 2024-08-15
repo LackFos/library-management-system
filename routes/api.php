@@ -7,6 +7,7 @@ use App\Http\Controllers\OneTimePasswordController;
 use App\Http\Controllers\PenaltyController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\UserIsAdmin;
+use App\Http\Middleware\Verified;
 use App\Models\Book;
 use App\Models\Borrow;
 use Illuminate\Support\Facades\Route;
@@ -32,14 +33,14 @@ Route::prefix('/v1')->group(function () {
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/login', [UserController::class, 'login']);
 
-        Route::get('/borrows', [BorrowController::class, 'myBorrows'])->middleware('auth:sanctum');
+        Route::get('/borrows', [BorrowController::class, 'myBorrows'])->middleware(['auth:sanctum', Verified::class]);
         Route::post('/reset-password', [UserController::class, 'resetPassword']);
         Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
         Route::post('/verify', [UserController::class, 'verifyAccount'])->middleware('auth:sanctum');
         Route::post('/send-verify-otp', [UserController::class, 'sendVerifyOtp'])->middleware('auth:sanctum');
     });
 
-    Route::prefix('/books')->middleware('auth:sanctum')->group(function () {
+    Route::prefix('/books')->middleware(['auth:sanctum', Verified::class])->group(function () {
        Route::get('/', [BookController::class, 'all']);
        Route::get('/{book:isbn}', [BookController::class, 'detail']);
        Route::post('/', [BookController::class, 'create'])->middleware(UserIsAdmin::class);
