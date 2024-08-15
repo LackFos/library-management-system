@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Request\OneTimePassword;
+namespace App\Http\Requests\OneTimePassword;
 
 use App\Enums\OtpType;
 use Illuminate\Foundation\Http\FormRequest;

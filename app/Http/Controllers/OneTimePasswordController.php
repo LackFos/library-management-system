@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\OneTimePassword\OneTimePasswordVerifyRequest;
 use App\Models\OneTimePassword;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Request\OneTimePassword\OneTimePasswordVerifyRequest;
 
 class OneTimePasswordController extends Controller
 {
