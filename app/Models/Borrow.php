@@ -36,12 +36,12 @@ class Borrow extends Model
     {
         $borrowDate = Carbon::parse($this->created_at);        
         $currentDate = Carbon::now();
-
+        
         $penaltyPerDay = 10000;
         $totalBookBorrowed = $this->books()->count();
-
-        $dueDay = env('APP_BORROW_DUE_DAY', 7);
-
+        
+        $dueDay = (int) env('APP_BORROW_DUE_DAY', 7);
+        
         $dueDate = $borrowDate->addDays($dueDay);
         $daysOverdue = floor($dueDate->diffInDays($currentDate));
         $isOverdue = $daysOverdue > 0;
