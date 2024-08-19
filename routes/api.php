@@ -10,6 +10,7 @@ use App\Http\Middleware\UserIsAdmin;
 use App\Http\Middleware\Verified;
 use App\Models\Book;
 use App\Models\Borrow;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,11 +34,36 @@ Route::prefix('/v1')->group(function () {
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/login', [UserController::class, 'login']);
 
-        Route::get('/borrows', [BorrowController::class, 'myBorrows'])->middleware(['auth:sanctum', Verified::class]);
         Route::post('/reset-password', [UserController::class, 'resetPassword']);
         Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
-        Route::post('/verify', [UserController::class, 'verifyAccount'])->middleware('auth:sanctum');
-        Route::post('/send-verify-otp', [UserController::class, 'sendVerifyOtp'])->middleware('auth:sanctum');
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/verify', [UserController::class, 'verifyAccount']);
+            Route::post('/send-verify-otp', [UserController::class, 'sendVerifyOtp']);
+            Route::get('/borrows', [BorrowController::class, 'myBorrows'])->middleware([Verified::class]);
+
+            Route::get('/stats', function () {
+                /** @var User $user */
+                $user = Auth::user();
+
+                $penaltyFeeAmount = 0;
+
+                $stats = [
+                    'borrow_count' => $user->borrows->where('borrow_status_id', '1')->count(),
+                    'overdue_count' => $user->borrows()->where('borrow_status_id', '1')->get()->filter(function ($borrow) use (&$penaltyFeeAmount) {
+                        $penaltyFee = $borrow->getPenaltyFee();
+                        
+                        // $penaltyFeeAmount += $penaltyFee;
+                        $penaltyFeeAmount += 100;
+                        
+                        return $penaltyFee !== null;
+                    })->count(),
+                    'penalty_fee' => $penaltyFeeAmount,
+                ];
+
+                return ResponseHelper::returnOkResponse("User stats", $stats);
+            });
+        });
     });
 
     Route::prefix('/books')->middleware(['auth:sanctum', Verified::class])->group(function () {
