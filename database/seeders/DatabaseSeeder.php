@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
-            'password'=> 'admin'            
+            'password'=> 'admin',
+            'email_verified_at' => now()        
         ]);
         $user->roles()->sync([2]);
     }
