@@ -53,8 +53,7 @@ Route::prefix('/v1')->group(function () {
                     'overdue_count' => $user->borrows()->where('borrow_status_id', '1')->get()->filter(function ($borrow) use (&$penaltyFeeAmount) {
                         $penaltyFee = $borrow->getPenaltyFee();
                         
-                        // $penaltyFeeAmount += $penaltyFee;
-                        $penaltyFeeAmount += 100;
+                        $penaltyFeeAmount += $penaltyFee;
                         
                         return $penaltyFee !== null;
                     })->count(),
