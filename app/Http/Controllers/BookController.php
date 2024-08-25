@@ -21,7 +21,7 @@ class BookController extends Controller
             if ($keyword) {
                 $query->where('title', 'like', '%' . $keyword . '%');
             }
-    
+
             $books = $query->withCount([
                 'borrowed' => function ($query) {
                     $query->where('borrow_status_id', BorrowStatus::BORROWING);

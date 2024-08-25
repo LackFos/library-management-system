@@ -21,12 +21,16 @@ class BorrowController extends Controller
             $query = Borrow::latest();
 
             $userId = $request->query('user_id');
+            $borrowId = $request->query('borrow_id');
+            $statusId = $request->query('status_id');
 
             if($userId) {
                 $query->where('user_id', $userId);
             }
 
-            $statusId = $request->query('status_id');
+            if ($borrowId) {
+                $query->find($borrowId);
+            }
 
             if($statusId) {
                 $query->where('borrow_status_id', $statusId);
