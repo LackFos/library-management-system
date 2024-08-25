@@ -15,14 +15,14 @@ class CreateBookRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'bail|required|string|min:3|max:255|unique:books',
-            'author' => 'bail|required|string|min:3|max:255',
-            'isbn' => 'bail|required|string|unique:books|digits_between:10,13',
-            'publisher' => 'bail|required|string|min:3|max:255',
+            'title' => 'bail|required|min:3|max:255|unique:books',
+            'author' => 'bail|required|min:3|max:255',
+            'isbn' => 'bail|required|unique:books|digits_between:10,13',
+            'publisher' => 'bail|required|min:3|max:255',
             'publication_date' => 'bail|required|date',
             'stock' => 'bail|required|integer|min:0',
             'image' => 'bail|nullable|image|max:5120',
-            "description" => 'bail|nullable|string|max:255'
+            "description" => 'bail|nullable|max:255'
         ];
     }
 }

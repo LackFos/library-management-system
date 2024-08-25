@@ -8,6 +8,9 @@ use App\Helpers\ResponseHelper;
 use App\Http\Requests\Book\CreateBookRequest;
 use App\Http\Requests\Book\UpdateBookRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -42,17 +45,30 @@ class BookController extends Controller
 
     public function create(CreateBookRequest $request)
     {
+        DB::beginTransaction();
+
         try {
             $validated = $request->validated();
 
             $book = Book::create($validated);
 
+            if($request->hasFile('image')) {
+                $image = $request->file('image');
+                $filePath = Storage::disk('public')->putFile('/images', $image);
+                $fileUrl = Storage::url($filePath);
+                $book->image = $fileUrl;
+                $book->save();
+            }
+
             if($request->expectsJson()) {
+                DB::commit();
                 return ResponseHelper::returnOkResponse('Book created', $book);
             } else {
                 return redirect('/buku/' . $book->id)->with('success', 'Buku berhasil ditambahkan');
             }
+
         } catch (\Exception $ex) {
+            DB::rollBack();
             return ResponseHelper::throwInternalError($ex->getMessage());
         }
     }
@@ -73,6 +89,20 @@ class BookController extends Controller
 
             $book->update($validated);
 
+            $previousImage = $book->image; 
+
+            if($request->hasFile('image')) {
+                if($previousImage !== '/storage/images/noimage.jpg') {
+                    Storage::disk('public')->delete(preg_replace('/^\/storage/', '', $previousImage));
+                }
+
+                $image = $request->file('image');
+                $filePath = Storage::disk('public')->putFile('/images', $image);
+                $fileUrl = Storage::url($filePath);
+                $book->image = $fileUrl;
+                $book->save();
+            }
+
             if ($request->expectsJson()) {
                 return ResponseHelper::returnOkResponse('Book updated successfully', $book);
             } else {
@@ -87,6 +117,12 @@ class BookController extends Controller
     {
         try {
             $book->borrowed()->delete();
+
+            $previousImage = $book->image;
+
+            if($previousImage !== '/storage/images/noimage.jpg') {
+                Storage::disk('public')->delete(preg_replace('/^\/storage/', '', $previousImage));
+            }
 
             $book->delete();
 
