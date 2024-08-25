@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Borrow extends Model
 {
@@ -41,21 +42,10 @@ class Borrow extends Model
         $totalBookBorrowed = $this->books()->count();
         
         $dueDay = (int) env('APP_BORROW_DUE_DAY', 7);
-        
         $dueDate = $borrowDate->addDays($dueDay);
-        $daysOverdue = floor($dueDate->diffInDays($currentDate));
+        $daysOverdue = $dueDate->lessThan($currentDate) ? max(1, $dueDate->diffInDays($currentDate)) : 0;
         $isOverdue = $daysOverdue > 0;
-
-        // $borrowDate = Carbon::parse($this->created_at);        
-        // $currentDate = Carbon::now();
-
-        // $penaltyPerDay = 10000;
-        // $totalBookBorrowed = $this->books()->count();
-
-        // $dueDate = $borrowDate->addMinutes(5);
-        // $daysOverdue = floor($dueDate->diffInMinutes($currentDate));
-        // $isOverdue = $daysOverdue > 0;
-
+        
         return $isOverdue ?  $daysOverdue * ($totalBookBorrowed * $penaltyPerDay) : null;
     }
 }
