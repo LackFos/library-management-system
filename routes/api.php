@@ -21,7 +21,9 @@ Route::prefix('/v1')->group(function () {
     Route::middleware(['auth:sanctum', UserIsAdmin::class])->get('/stats', function() {
         $stats = [
             'book_count' => Book::count(),
-            'borrow_count' => Borrow::where('borrow_status_id', '1')->count(),
+            'borrow_count' => Borrow::where('borrow_status_id', '1')->withCount('books')
+            ->get()
+            ->sum('books_count'),
             'overdue_count' => Borrow::where('borrow_status_id', '1')->get()->filter(function ($borrow) {
                 return $borrow->getPenaltyFee() !== null;
             })->count(),
@@ -49,7 +51,11 @@ Route::prefix('/v1')->group(function () {
                 $penaltyFeeAmount = 0;
 
                 $stats = [
-                    'borrow_count' => $user->borrows->where('borrow_status_id', '1')->count(),
+                    'borrow_count' => $user->borrows()
+                    ->where('borrow_status_id', 1)
+                    ->withCount('books')
+                    ->get()
+                    ->sum('books_count'),
                     'overdue_count' => $user->borrows()->where('borrow_status_id', '1')->get()->filter(function ($borrow) use (&$penaltyFeeAmount) {
                         $penaltyFee = $borrow->getPenaltyFee();
                         
